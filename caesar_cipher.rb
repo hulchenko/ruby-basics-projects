@@ -4,18 +4,15 @@
 
 
 def caesar_cipher(string, shift_num)
-  # 1. identify which string indexes are capitalized ----> alternatively this can be done as {index: 1, capitalized?: true, value: 'b'}
-  # 2. return original array of numbers for each character
-  # 3. subtract existing indexes with shift_num
-  # 4. if index is negative, calculate negative from alphabet.length
-  # 5. return modified array of numbers for each character
-  # 6. capitalize modified characters from step 2
-  alphabet = ('a'..'z').to_a
+  # 1. Identify current characters as alphabet indexes and if they are capitalized: {index: 1, capitalized?: true}
+  # 2. Preserve non-alphabetic characters as they are: {value: '!'}
+  # 3. Calculate offset based on index, shift and alphabet's length
+  # 4. Return modified array of numbers for each character. For..each loop will take care of the original sequence of the nested objects in array
+  # 5. Finally, capitalize modified characters, based on step 1 and return/print the value
 
+  alphabet = ('a'..'z').to_a
   original_map = get_original_index_map(alphabet, string);
-  p original_map
   shifted_map  = shift_original_index_map(original_map, shift_num)
-  
   map_to_string_handler(alphabet, shifted_map)
 end
 
@@ -37,14 +34,15 @@ def get_original_index_map(alphabet, string)
 end
 
 def shift_original_index_map(array, shift)
+  alphabet_length = 26
   result = array.map do |char| # {:index=>22, :capitalized?=>true}
     if char.key?(:index)
       original_index = char[:index]
-      if shift > original_index
-        offset_index = get_index_offset(original_index, shift)
+      if (shift + original_index) > alphabet_length
+        offset_index = get_index_offset(original_index, shift, alphabet_length)
         char[:index] = offset_index
       else
-        char[:index] = original_index.to_i - shift.to_i
+        char[:index] = original_index.to_i + shift.to_i
       end
     end
     char # this is important to return
@@ -52,23 +50,28 @@ def shift_original_index_map(array, shift)
   result
 end
 
-def get_index_offset(original_index, shift)
-  alphabet_length = 26
-  negative_offset = shift.to_i - original_index.to_i
-  alphabet_length - negative_offset
+def get_index_offset(original_index, shift, alphabet_length)
+  # e.g. 24 + 5 should equal to 3 <-- offset
+  (original_index.to_i + shift.to_i) - alphabet_length
 end
 
 def map_to_string_handler(alphabet, shifted_map)
-  p shifted_map
   result = ''
-  shifted_map.each do |char|
-    if char.key?(:index) # proper alphabet character
-      result += alphabet[char[:index]]
+  shifted_map.each_with_index do |char, index|
+    if char.key?(:index) and char.key?(:capitalized?) # identify proper alphabet character
+      if char[:capitalized?]
+        result += alphabet[char[:index]].upcase
+      else
+        result += alphabet[char[:index]]
+      end
+    end
+    if char.key?(:value)
+      # return non-alphabet character as-is
+      result += char[:value]
     end
   end
-  p result
+  puts "Result: #{result}"
+  result
 end
 
-# TODO indexes should be added not subtracted
-
-caesar_cipher("What a string!", 5)
+caesar_cipher("What a string!", 5) # => "Bmfy f xywnsl!"
