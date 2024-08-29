@@ -57,7 +57,7 @@ end
 
 def map_to_string_handler(alphabet, shifted_map)
   result = ''
-  shifted_map.each_with_index do |char, index|
+  shifted_map.each do |char|
     if char.key?(:index) and char.key?(:capitalized?) # identify proper alphabet character
       if char[:capitalized?]
         result += alphabet[char[:index]].upcase
